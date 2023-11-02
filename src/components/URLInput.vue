@@ -4,6 +4,7 @@ import URLListItem from './URLListItem.vue'
 
 interface URLObject {
     uuid: string
+    name: string
     original: string
     shortened: string
 }
@@ -12,11 +13,23 @@ const localStorageKey = 'urlStorage'
 const inputURL = ref('')
 let urlArray = ref<URLObject[]>([])
 
+function validateURL(inputURL: string) {
+    const regexp =
+        /[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)?/gi
+
+    if (!inputURL.match(regexp)) {
+        alert('Please enter a valid URL. ')
+        console.log(inputURL)
+    } else {
+        shortenURL(inputURL)
+    }
+}
+
 function shortenURL(inputURL: string) {
     var endpointURL = new URL(
         'https://csclub.uwaterloo.ca/~phthakka/1pt-express/addURL'
     )
-    // 'long' is simply the name of the key that the API accepts
+    // 'long' is just the name of the key that the API accepts
     endpointURL.searchParams.set('long', inputURL)
 
     fetch(endpointURL.href, { method: 'POST' })
@@ -36,6 +49,7 @@ function addURL(originalURL: string, shortenedURL: string) {
     // Create new object
     const newItem: URLObject = {
         uuid: uuid,
+        name: originalURL,
         original: originalURL,
         shortened: shortenedURL,
     }
@@ -46,7 +60,13 @@ function addURL(originalURL: string, shortenedURL: string) {
     updateLocalStorage()
 }
 
-function removeURL(index: number) {
+function removeURL(uuid: string) {
+    function findByUuid(item: URLObject) {
+        return item.uuid === uuid
+    }
+    const index = urlArray.value.findIndex(findByUuid)
+
+    console.log(index)
     urlArray.value.splice(index, 1)
     updateLocalStorage()
 }
@@ -75,21 +95,25 @@ onMounted(() => {
             id="url-input"
             type="text"
             placeholder="Enter a URL"
-            v-on:keyup.enter="shortenURL(inputURL)"
+            v-on:keyup.enter="validateURL(inputURL)"
         />
-        <button id="submit-url" v-on:click="shortenURL(inputURL)">
+        <button id="submit-url" v-on:click="validateURL(inputURL)">
             Submit
         </button>
     </div>
     <div class="list-container">
         <ul id="url-list">
             <URLListItem
-                v-for="(item, index) in urlArray"
+                v-for="item in urlArray"
                 :key="item.uuid"
-                :index="index"
                 :item="item"
                 @remove-url="removeURL"
             />
         </ul>
     </div>
 </template>
+
+<style scoped lang="scss">
+// input {
+// }
+</style>
