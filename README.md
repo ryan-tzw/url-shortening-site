@@ -1,8 +1,9 @@
 # Simple URL Shortening Site
 
-My first project with Vue
+Learning Vue with a basic practice project
+
+Design isn't done yet and I don't have time lately .-.
 
 Technologies used:
-
 -   Vue
 -   TypeScript
